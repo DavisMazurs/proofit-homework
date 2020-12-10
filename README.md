@@ -1,55 +1,69 @@
-# Proof IT Policy Calculator
-##### Author: Dāvis Mazurs
+## Update
+###### version 2
 
-## Description
-
-This is a very simple policy calculator, that caluculates premium based on values that are defined in code. It's been made to be easily extendable if there's need for that (for example new risk types added). This is a very simple implementation, without any configuration files, and depencency injection exists only in test class.
-
-## Risk Types and Coefficient Calculation
-
-It's very easy to add new risk types, all you need to do - add the new value in RiskType enum, and then define logic for calculation multiplication coefficient, by adding a case to the switch:
-> hw.proofit.policycalculator.CalculationProperties.java
-```
-    private static BigDecimal getCoefficient(RiskType riskType, BigDecimal sum) {
-        switch (riskType) {
-            case FIRE:
-                return BigDecimalUtils.isGreaterThan(sum, BigDecimal.valueOf(100)) ? BigDecimal.valueOf(0.024) : BigDecimal.valueOf(0.014);
-            case THEFT:
-                return BigDecimalUtils.isGreaterThanOrEqual(sum, BigDecimal.valueOf(15)) ? BigDecimal.valueOf(0.05) : BigDecimal.valueOf(0.11);
-            case NEW_CASE:
-                //enter logic here
-            default:
-                return BigDecimal.ZERO;
-        }
-    }
-```
-
-## Validation
-
-There is a simple validation in place, which checks if input is valid. Validation rules can easily be added, defining a new validation method, which adds an error message to the list of error messages in case on validation failing:
-> hw.proofit.policycalculator.Validator.java
-```
-    private void validatePolicyHasAtleastOneObject(Policy policy) {
-        if (policy.getPolicyObjects() == null || policy.getPolicyObjects().isEmpty()) {
-            errorMessages.add("Error: Policy must contain at least 1 policy object");
-        }
-    }
-    
-    private void newValidationRule() {
-        if(//some_criteria) {
-            errorMessages.add("Error message")
-        }
-    }
-```
-
-## Premium Calculation
-
-Most processes are made to be reusable and extendable, however the premium calculation rules were very specific in task description, and since it was the only required way of calculating premium, the output is produced by this block of code:
+Major refactoring, and redesigning system core. Also moved all the calculation logic into one class "PolicyCalculator" which is a Service, and contains main calculate() method, as well as a private method for calculating premium. Is was designed in a way to add more premium calculation implementations if needed, but currently there is only one:
 > hw.proofit.policycalculator.PolicyCalculator.java
 ```
-        return BigDecimalUtils.formatMoney(
-                riskTypePremiums.getOrDefault(RiskType.FIRE, BigDecimal.ZERO)
-                .add(riskTypePremiums.getOrDefault(RiskType.THEFT, BigDecimal.ZERO)));
+private BigDecimal multiplySumByCoefficient(RiskType type, BigDecimal sum) {
+    PolicyRiskType riskType = beanFactory.getBean(type.name().toUpperCase(), PolicyRiskType.class);
+    BigDecimal coefficient = riskType.getCoefficient(sum);
+    return sum.multiply(coefficient);
+}
 ```
 
-In this case this is ok, but if there would be other possibilities of how premium was calculated, this would need to be refactored - probably moved to some utility class that contains all the calculation options.
+
+## Adding new risk types
+
+The biggest change is the way how risk types are added/processed. Using dependency injection and bean factory (see above in the premium calculation method), the system calculates the correct value depending on parameters given inside implementation of each type.
+
+It is possible to define parameters in application.properties file, and then inject them into the specific risk type implementation:
+> application.properties
+```
+#Fire Risk Type properties
+risktype.fire.default.value=0.014
+risktype.fire.alternate.value=0.024
+risktype.fire.condition.value=100
+```
+```
+@Autowired
+public FireRiskType(@Value("${risktype.fire.default.value}") BigDecimal defaultValue,
+                    @Value("${risktype.fire.alternate.value}") BigDecimal alternateValue,
+                    @Value("${risktype.fire.condition.value}") BigDecimal conditionValue)
+```
+
+To add a new type, first you must add it to the RiskType enum:
+> hw.proofit.policycalculator.enums.RiskType.java
+```
+public enum RiskType {
+    FIRE,
+    THEFT,
+    NEW_TYPE
+}
+```
+
+After that, simply create a new class for your type, which implements the PolicyRiskType interface, make it a component, and adjust it to your needs. Currently it contains only one method, that retuns the correct coefficient for the given type:
+> NOTE: Component name must be exactly the same as it's enum name. It is not case sensitive.
+> hw.proofit.policycalculator.risktypes.FireRiskType.java
+```
+@Component("FIRE")
+public class FireRiskType implements PolicyRiskType {
+
+    private BigDecimal defaultValue;
+    private BigDecimal alternateValue;
+    private BigDecimal conditionValue;
+
+    @Autowired
+    public FireRiskType(@Value("${risktype.fire.default.value}") BigDecimal defaultValue,
+                        @Value("${risktype.fire.alternate.value}") BigDecimal alternateValue,
+                        @Value("${risktype.fire.condition.value}") BigDecimal conditionValue) {
+        this.defaultValue = defaultValue;
+        this.alternateValue = alternateValue;
+        this.conditionValue = conditionValue;
+    }
+
+    @Override
+    public BigDecimal getCoefficient(BigDecimal sum) {
+        return BigDecimalUtils.isGreaterThan(sum, conditionValue) ? alternateValue : defaultValue;
+    }
+}
+```

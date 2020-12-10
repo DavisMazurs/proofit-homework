@@ -1,7 +1,6 @@
 package hw.proofit.policycalculator;
 
 import hw.proofit.policycalculator.model.Policy;
-import hw.proofit.policycalculator.model.PolicyObject;
 import hw.proofit.policycalculator.model.PolicySubObject;
 
 import java.math.BigDecimal;
