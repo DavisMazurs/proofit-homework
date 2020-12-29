@@ -3,7 +3,6 @@ package hw.proofit.policycalculator;
 import hw.proofit.policycalculator.model.Policy;
 import hw.proofit.policycalculator.model.PolicyObject;
 import hw.proofit.policycalculator.model.PolicySubObject;
-import hw.proofit.policycalculator.enums.PolicyStatus;
 import hw.proofit.policycalculator.enums.RiskType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +23,10 @@ class PolicyCalculatorTest {
     @Test
     public void first_test_case() {
         //Arrange
-        PolicySubObject fireSubObject = PolicySubObject.create("TV", BigDecimal.valueOf(100), RiskType.FIRE);
-        PolicySubObject theftSubObject = PolicySubObject.create("Coffee Maker", BigDecimal.valueOf(8), RiskType.THEFT);
-        PolicyObject policyObject = PolicyObject.create("Home", Arrays.asList(fireSubObject, theftSubObject));
-        Policy policy = Policy.create("Some Policy Number", PolicyStatus.APPROVED, Collections.singletonList(policyObject));
+        PolicySubObject fireSubObject = PolicySubObject.create(BigDecimal.valueOf(100), RiskType.FIRE);
+        PolicySubObject theftSubObject = PolicySubObject.create(BigDecimal.valueOf(8), RiskType.THEFT);
+        PolicyObject policyObject = PolicyObject.create(Arrays.asList(fireSubObject, theftSubObject));
+        Policy policy = Policy.create(Collections.singletonList(policyObject));
 
         //Act
         String result = policyCalculator.calculate(policy);
@@ -39,15 +38,15 @@ class PolicyCalculatorTest {
     @Test
     public void second_test_case() {
         //Arrange
-        PolicySubObject fireSubObjectOne = PolicySubObject.create("TV", BigDecimal.valueOf(125), RiskType.FIRE);
-        PolicySubObject fireSubObjectTwo = PolicySubObject.create("Expensive Furniture", BigDecimal.valueOf(200), RiskType.FIRE);
-        PolicySubObject fireSubObjectThree = PolicySubObject.create("Phone", BigDecimal.valueOf(75), RiskType.FIRE);
-        PolicySubObject fireSubObjectFour = PolicySubObject.create("Coffee Maker", BigDecimal.valueOf(100), RiskType.FIRE);
-        PolicySubObject theftSubObjectOne = PolicySubObject.create("TV", BigDecimal.valueOf(56.12), RiskType.THEFT);
-        PolicySubObject theftSubObjectTwo = PolicySubObject.create("Coffee Maker", BigDecimal.valueOf(37.89), RiskType.THEFT);
-        PolicySubObject theftSubObjectThree = PolicySubObject.create("Laptop", BigDecimal.valueOf(8.50), RiskType.THEFT);
+        PolicySubObject fireSubObjectOne = PolicySubObject.create(BigDecimal.valueOf(125), RiskType.FIRE);
+        PolicySubObject fireSubObjectTwo = PolicySubObject.create(BigDecimal.valueOf(200), RiskType.FIRE);
+        PolicySubObject fireSubObjectThree = PolicySubObject.create(BigDecimal.valueOf(75), RiskType.FIRE);
+        PolicySubObject fireSubObjectFour = PolicySubObject.create(BigDecimal.valueOf(100), RiskType.FIRE);
+        PolicySubObject theftSubObjectOne = PolicySubObject.create(BigDecimal.valueOf(56.12), RiskType.THEFT);
+        PolicySubObject theftSubObjectTwo = PolicySubObject.create(BigDecimal.valueOf(37.89), RiskType.THEFT);
+        PolicySubObject theftSubObjectThree = PolicySubObject.create(BigDecimal.valueOf(8.50), RiskType.THEFT);
 
-        PolicyObject policyObject = PolicyObject.create("Home",
+        PolicyObject policyObject = PolicyObject.create(
                 Arrays.asList(fireSubObjectOne,
                         fireSubObjectTwo,
                         fireSubObjectThree,
@@ -56,7 +55,7 @@ class PolicyCalculatorTest {
                         theftSubObjectTwo,
                         theftSubObjectThree));
 
-        Policy policy = Policy.create("Some Policy Number", PolicyStatus.APPROVED, Collections.singletonList(policyObject));
+        Policy policy = Policy.create(Collections.singletonList(policyObject));
 
         //Act
         String result = policyCalculator.calculate(policy);
@@ -68,14 +67,14 @@ class PolicyCalculatorTest {
     @Test
     public void custom_test_case_one() {
         //Arrange
-        PolicySubObject fireSubObject = PolicySubObject.create("TV", BigDecimal.valueOf(100), RiskType.FIRE);
-        PolicySubObject fireSubObject2 = PolicySubObject.create("TV", BigDecimal.valueOf(256.00), RiskType.FIRE);
-        PolicySubObject fireSubObject3 = PolicySubObject.create("TV", BigDecimal.valueOf(50), RiskType.FIRE);
-        PolicySubObject theftSubObject = PolicySubObject.create("Coffee Maker", BigDecimal.valueOf(8), RiskType.THEFT);
-        PolicySubObject theftSubObject2 = PolicySubObject.create("Coffee Maker", BigDecimal.valueOf(24.13), RiskType.THEFT);
-        PolicySubObject theftSubObject3 = PolicySubObject.create("Coffee Maker", BigDecimal.valueOf(32.26), RiskType.THEFT);
-        PolicyObject policyObject = PolicyObject.create("Home", Arrays.asList(fireSubObject, theftSubObject, fireSubObject2, theftSubObject2, fireSubObject3, theftSubObject3));
-        Policy policy = Policy.create("Some Policy Number", PolicyStatus.APPROVED, Collections.singletonList(policyObject));
+        PolicySubObject fireSubObject = PolicySubObject.create(BigDecimal.valueOf(100), RiskType.FIRE);
+        PolicySubObject fireSubObject2 = PolicySubObject.create(BigDecimal.valueOf(256.00), RiskType.FIRE);
+        PolicySubObject fireSubObject3 = PolicySubObject.create(BigDecimal.valueOf(50), RiskType.FIRE);
+        PolicySubObject theftSubObject = PolicySubObject.create(BigDecimal.valueOf(8), RiskType.THEFT);
+        PolicySubObject theftSubObject2 = PolicySubObject.create(BigDecimal.valueOf(24.13), RiskType.THEFT);
+        PolicySubObject theftSubObject3 = PolicySubObject.create(BigDecimal.valueOf(32.26), RiskType.THEFT);
+        PolicyObject policyObject = PolicyObject.create(Arrays.asList(fireSubObject, theftSubObject, fireSubObject2, theftSubObject2, fireSubObject3, theftSubObject3));
+        Policy policy = Policy.create(Collections.singletonList(policyObject));
 
         //Act
         String result = policyCalculator.calculate(policy);
@@ -87,11 +86,11 @@ class PolicyCalculatorTest {
     @Test
     public void custom_test_case_two() {
         //Arrange
-        PolicySubObject fireSubObject = PolicySubObject.create("TV", BigDecimal.valueOf(100), RiskType.FIRE);
-        PolicySubObject fireSubObject2 = PolicySubObject.create("TV", BigDecimal.valueOf(256.00), RiskType.FIRE);
-        PolicySubObject fireSubObject3 = PolicySubObject.create("TV", BigDecimal.valueOf(50), RiskType.FIRE);
-        PolicyObject policyObject = PolicyObject.create("Home", Arrays.asList(fireSubObject, fireSubObject2, fireSubObject3));
-        Policy policy = Policy.create("Some Policy Number", PolicyStatus.APPROVED, Collections.singletonList(policyObject));
+        PolicySubObject fireSubObject = PolicySubObject.create(BigDecimal.valueOf(100), RiskType.FIRE);
+        PolicySubObject fireSubObject2 = PolicySubObject.create(BigDecimal.valueOf(256.00), RiskType.FIRE);
+        PolicySubObject fireSubObject3 = PolicySubObject.create(BigDecimal.valueOf(50), RiskType.FIRE);
+        PolicyObject policyObject = PolicyObject.create(Arrays.asList(fireSubObject, fireSubObject2, fireSubObject3));
+        Policy policy = Policy.create(Collections.singletonList(policyObject));
 
         //Act
         String result = policyCalculator.calculate(policy);
@@ -103,10 +102,10 @@ class PolicyCalculatorTest {
     @Test
     public void doesnt_allow_negative_numbers() {
         //Arrange
-        PolicySubObject fireSubObject = PolicySubObject.create("TV", BigDecimal.valueOf(-1), RiskType.FIRE);
-        PolicySubObject theftSubObject = PolicySubObject.create("Coffee Maker", BigDecimal.valueOf(8), RiskType.THEFT);
-        PolicyObject policyObject = PolicyObject.create("Home", Arrays.asList(fireSubObject, theftSubObject));
-        Policy policy = Policy.create("Some Policy Number", PolicyStatus.APPROVED, Collections.singletonList(policyObject));
+        PolicySubObject fireSubObject = PolicySubObject.create(BigDecimal.valueOf(-1), RiskType.FIRE);
+        PolicySubObject theftSubObject = PolicySubObject.create(BigDecimal.valueOf(8), RiskType.THEFT);
+        PolicyObject policyObject = PolicyObject.create(Arrays.asList(fireSubObject, theftSubObject));
+        Policy policy = Policy.create(Collections.singletonList(policyObject));
 
         //Act
         String result = policyCalculator.calculate(policy);
@@ -118,8 +117,8 @@ class PolicyCalculatorTest {
     @Test
     public void doesnt_crash_if_subobjects_are_null() {
         //Arrange
-        PolicyObject policyObject = PolicyObject.create("Work", null);
-        Policy policy = Policy.create("Policy Number", PolicyStatus.REGISTERED, Collections.singletonList(policyObject));
+        PolicyObject policyObject = PolicyObject.create(null);
+        Policy policy = Policy.create(Collections.singletonList(policyObject));
 
         //Act
         String result = policyCalculator.calculate(policy);
@@ -131,7 +130,7 @@ class PolicyCalculatorTest {
     @Test
     public void policy_has_no_policy_object() {
         //Arrange
-        Policy policy = Policy.create("Policy number", PolicyStatus.APPROVED, null);
+        Policy policy = Policy.create(null);
 
         //Act
         String result = policyCalculator.calculate(policy);
