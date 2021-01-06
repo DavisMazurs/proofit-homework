@@ -1,10 +1,11 @@
 package hw.proofit.policycalculator.services;
 
 import hw.proofit.policycalculator.enums.RiskType;
-import hw.proofit.policycalculator.model.Policy;
+import hw.proofit.policycalculator.builder.PolicyBuildingObject;
 import hw.proofit.policycalculator.model.PolicyCalculation;
 import hw.proofit.policycalculator.model.PolicySubObject;
 import hw.proofit.policycalculator.risktypes.PolicyRiskType;
+import hw.proofit.policycalculator.utils.ConversionUtils;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,45 +13,40 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.reducing;
+import static java.util.stream.Collectors.*;
 
 @Service
 public class PolicyService {
     private final BeanFactory beanFactory;
+    private final ComponentService componentService;
 
     @Autowired
-    public PolicyService(BeanFactory beanFactory) {
+    public PolicyService(BeanFactory beanFactory,
+                         ComponentService componentService) {
         this.beanFactory = beanFactory;
+        this.componentService = componentService;
     }
 
-    public List<PolicySubObject> getAllSubObjects(Policy policy) {
-        return policy.getPolicyObjects().stream()
-                .filter(policyObject -> policyObject.getSubObjects() != null)
-                .flatMap(policyObject -> policyObject.getSubObjects().stream())
-                .collect(Collectors.toList());
+    public BigDecimal calculatePremium(PolicyBuildingObject builder) {
+        List<PolicySubObject> subObjects = ConversionUtils.getAllSubObjects(builder.getSource());
+        Map<RiskType, List<BigDecimal>> groupedSubObjects = ConversionUtils.groupSubObjects(subObjects);
+
+        List<PolicyCalculation> calculatedSubObjects = componentService.subObjectCalculation(groupedSubObjects, builder.getSubObjectCalculation());
+        List<PolicyCalculation> processedSubObjects = processSubObjects(calculatedSubObjects, builder.getRiskTypes());
+        List<PolicyCalculation> riskTypePremiums = componentService.riskTypeCalculation(processedSubObjects, builder.getRiskTypeCalculation());
+        return componentService.premiumCalculation(riskTypePremiums, builder.getPremiumCalculation());
     }
 
-    public List<PolicyCalculation> getEachRiskTypePremium(List<PolicySubObject> policySubObjects) {
-        return getEachRiskTypeSum(policySubObjects).entrySet().stream()
-                .map(riskTypeEntry -> PolicyCalculation.create(
-                                riskTypeEntry.getKey(),
-                                getPremium(riskTypeEntry.getKey(), riskTypeEntry.getValue())
-                        ))
-                .collect(Collectors.toList());
+    private List<PolicyCalculation> processSubObjects(List<PolicyCalculation> subObjects, List<RiskType> riskTypes) {
+        return subObjects.stream()
+                .filter(subObject -> riskTypes.isEmpty() || riskTypes.contains(subObject.getRiskType()))
+                .map(this::getCoefficient)
+                .collect(toList());
     }
 
-    private Map<RiskType, BigDecimal> getEachRiskTypeSum(List<PolicySubObject> policySubObjects) {
-        return policySubObjects.stream()
-                .collect(groupingBy(
-                        PolicySubObject::getRiskType,
-                        reducing(BigDecimal.ZERO, PolicySubObject::getSumInsured, BigDecimal::add)));
-    }
-
-    private BigDecimal getPremium(RiskType type, BigDecimal sum) {
-        PolicyRiskType riskType = beanFactory.getBean(type.name().toUpperCase(), PolicyRiskType.class);
-        return sum.multiply(riskType.getCoefficient(sum));
+    private PolicyCalculation getCoefficient(PolicyCalculation policyCalculation) {
+        PolicyRiskType riskType = beanFactory.getBean(policyCalculation.getRiskType().name().toUpperCase(), PolicyRiskType.class);
+        return policyCalculation.setCoefficient(riskType.getCoefficient(policyCalculation.getSum()));
     }
 }

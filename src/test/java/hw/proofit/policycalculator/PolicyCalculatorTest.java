@@ -1,5 +1,7 @@
 package hw.proofit.policycalculator;
 
+import hw.proofit.policycalculator.PolicyCalculator;
+import hw.proofit.policycalculator.PolicyValidationException;
 import hw.proofit.policycalculator.model.Policy;
 import hw.proofit.policycalculator.model.PolicyObject;
 import hw.proofit.policycalculator.model.PolicySubObject;
@@ -21,7 +23,7 @@ class PolicyCalculatorTest {
     PolicyCalculator policyCalculator;
 
     @Test
-    public void first_test_case() {
+    void first_test_case() throws PolicyValidationException {
         //Arrange
         PolicySubObject fireSubObject = PolicySubObject.create(BigDecimal.valueOf(100), RiskType.FIRE);
         PolicySubObject theftSubObject = PolicySubObject.create(BigDecimal.valueOf(8), RiskType.THEFT);
@@ -36,7 +38,7 @@ class PolicyCalculatorTest {
     }
 
     @Test
-    public void second_test_case() {
+    void second_test_case() throws PolicyValidationException {
         //Arrange
         PolicySubObject fireSubObjectOne = PolicySubObject.create(BigDecimal.valueOf(125), RiskType.FIRE);
         PolicySubObject fireSubObjectTwo = PolicySubObject.create(BigDecimal.valueOf(200), RiskType.FIRE);
@@ -65,7 +67,7 @@ class PolicyCalculatorTest {
     }
 
     @Test
-    public void custom_test_case_one() {
+    void custom_test_case_one() throws PolicyValidationException {
         //Arrange
         PolicySubObject fireSubObject = PolicySubObject.create(BigDecimal.valueOf(100), RiskType.FIRE);
         PolicySubObject fireSubObject2 = PolicySubObject.create(BigDecimal.valueOf(256.00), RiskType.FIRE);
@@ -84,7 +86,7 @@ class PolicyCalculatorTest {
     }
 
     @Test
-    public void custom_test_case_two() {
+    void custom_test_case_two() throws PolicyValidationException {
         //Arrange
         PolicySubObject fireSubObject = PolicySubObject.create(BigDecimal.valueOf(100), RiskType.FIRE);
         PolicySubObject fireSubObject2 = PolicySubObject.create(BigDecimal.valueOf(256.00), RiskType.FIRE);
@@ -100,22 +102,7 @@ class PolicyCalculatorTest {
     }
 
     @Test
-    public void doesnt_allow_negative_numbers() {
-        //Arrange
-        PolicySubObject fireSubObject = PolicySubObject.create(BigDecimal.valueOf(-1), RiskType.FIRE);
-        PolicySubObject theftSubObject = PolicySubObject.create(BigDecimal.valueOf(8), RiskType.THEFT);
-        PolicyObject policyObject = PolicyObject.create(Arrays.asList(fireSubObject, theftSubObject));
-        Policy policy = Policy.create(Collections.singletonList(policyObject));
-
-        //Act
-        String result = policyCalculator.calculate(policy);
-
-        //Assert
-        assertEquals("Error: Insured sum must not contain negative numbers", result);
-    }
-
-    @Test
-    public void doesnt_crash_if_subobjects_are_null() {
+    void doesnt_crash_if_subobjects_are_null() throws PolicyValidationException {
         //Arrange
         PolicyObject policyObject = PolicyObject.create(null);
         Policy policy = Policy.create(Collections.singletonList(policyObject));
@@ -125,17 +112,5 @@ class PolicyCalculatorTest {
 
         //Assert
         assertEquals("0.00 EUR", result);
-    }
-
-    @Test
-    public void policy_has_no_policy_object() {
-        //Arrange
-        Policy policy = Policy.create(null);
-
-        //Act
-        String result = policyCalculator.calculate(policy);
-
-        //Assert
-        assertEquals("Error: Policy must contain at least 1 policy object", result);
     }
 }

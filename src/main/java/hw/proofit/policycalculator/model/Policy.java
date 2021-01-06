@@ -1,5 +1,8 @@
 package hw.proofit.policycalculator.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.List;
 
 public class Policy {
@@ -9,7 +12,8 @@ public class Policy {
         this.policyObjects = policyObjects;
     }
 
-    public static Policy create(List<PolicyObject> policyObjects) {
+    @JsonCreator
+    public static Policy create(@JsonProperty(value = "policyObjects") List<PolicyObject> policyObjects) {
         return new Policy(policyObjects);
     }
 

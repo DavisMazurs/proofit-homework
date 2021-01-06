@@ -1,41 +1,33 @@
 package hw.proofit.policycalculator;
 
+import hw.proofit.policycalculator.builder.PolicyBuildingPatterns;
+import hw.proofit.policycalculator.utils.BigDecimalUtils;
 import hw.proofit.policycalculator.model.Policy;
-import hw.proofit.policycalculator.model.PolicyCalculation;
-import hw.proofit.policycalculator.model.PolicySubObject;
+import hw.proofit.policycalculator.builder.PolicyBuildingObject;
 import hw.proofit.policycalculator.services.PolicyService;
-import hw.proofit.policycalculator.services.ValidationService;
+import hw.proofit.policycalculator.services.PolicyValidationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Service
 public class PolicyCalculator {
-    private final ValidationService validationService;
+    private final PolicyValidationService policyValidationService;
     private final PolicyService policyService;
 
     @Autowired
-    private PolicyCalculator(ValidationService validationService,
+    private PolicyCalculator(PolicyValidationService policyValidationService,
                              PolicyService policyService) {
-        this.validationService = validationService;
+        this.policyValidationService = policyValidationService;
         this.policyService = policyService;
     }
 
-    public String calculate(Policy policy) {
-        try {
-            validationService.validate(policy);
+    public String calculate(Policy policy) throws PolicyValidationException {
+        policyValidationService.validate(policy);
 
-            List<PolicySubObject> subObjects = policyService.getAllSubObjects(policy);
-            List<PolicyCalculation> policyPremiums = policyService.getEachRiskTypePremium(subObjects);
-            BigDecimal premium = policyPremiums.stream()
-                    .map(PolicyCalculation::getSum)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-            return BigDecimalUtils.formatMoney(premium);
-        } catch (PolicyValidationException e) {
-            return e.getMessage();
-        }
+        PolicyBuildingObject policyBuildingObject = PolicyBuildingPatterns.defaultPattern(policy);
+        BigDecimal premium = policyService.calculatePremium(policyBuildingObject);
+        return BigDecimalUtils.formatMoney(premium);
     }
 }

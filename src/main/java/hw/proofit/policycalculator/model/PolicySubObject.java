@@ -1,5 +1,7 @@
 package hw.proofit.policycalculator.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import hw.proofit.policycalculator.enums.RiskType;
 
 import java.math.BigDecimal;
@@ -13,7 +15,9 @@ public class PolicySubObject {
         this.riskType = riskType;
     }
 
-    public static PolicySubObject create(BigDecimal sumInsured, RiskType riskType) {
+    @JsonCreator
+    public static PolicySubObject create(@JsonProperty(value = "sumInsured") BigDecimal sumInsured,
+                                         @JsonProperty(value = "riskType") RiskType riskType) {
         return new PolicySubObject(sumInsured, riskType);
     }
 

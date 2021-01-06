@@ -1,10 +1,10 @@
 package hw.proofit.policycalculator.services;
 
-import hw.proofit.policycalculator.BigDecimalUtils;
+import hw.proofit.policycalculator.utils.BigDecimalUtils;
 import hw.proofit.policycalculator.PolicyValidationException;
 import hw.proofit.policycalculator.model.Policy;
 import hw.proofit.policycalculator.model.PolicySubObject;
-import org.springframework.beans.factory.annotation.Autowired;
+import hw.proofit.policycalculator.utils.ConversionUtils;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -12,24 +12,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class ValidationService {
-    private final PolicyService policyService;
-
+public class PolicyValidationService {
     private List<String> errorMessages = new ArrayList<>();
-
-    @Autowired
-    public ValidationService(PolicyService policyService) {
-        this.policyService = policyService;
-    }
 
     public void validate(Policy policy) throws PolicyValidationException {
         errorMessages.clear();
 
+        validatePolicyIsNotNull(policy);
         validatePolicyHasAtleastOneObject(policy);
         validateDoesntContainNegativeNumbers(policy);
 
         if (!errorMessages.isEmpty()) {
             throw new PolicyValidationException(String.join("; ", errorMessages));
+        }
+    }
+
+    private void validatePolicyIsNotNull(Policy policy) throws PolicyValidationException {
+        if (policy == null) {
+            throw new PolicyValidationException("Error: Policy must not be null");
         }
     }
 
@@ -41,7 +41,7 @@ public class ValidationService {
 
     private void validateDoesntContainNegativeNumbers(Policy policy) {
         if (policy.getPolicyObjects() != null) {
-            boolean containsNegativeNumbers = policyService.getAllSubObjects(policy).stream()
+            boolean containsNegativeNumbers = ConversionUtils.getAllSubObjects(policy).stream()
                     .map(PolicySubObject::getSumInsured)
                     .anyMatch(totalSum -> BigDecimalUtils.isLessThan(totalSum, BigDecimal.ZERO));
             if (containsNegativeNumbers) {

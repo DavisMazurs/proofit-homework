@@ -1,4 +1,4 @@
-package hw.proofit.policycalculator;
+package hw.proofit.policycalculator.utils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

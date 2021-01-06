@@ -1,6 +1,6 @@
 package hw.proofit.policycalculator.risktypes;
 
-import hw.proofit.policycalculator.BigDecimalUtils;
+import hw.proofit.policycalculator.utils.BigDecimalUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
